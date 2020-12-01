@@ -33,29 +33,25 @@ const XSLT = new DOMParser().parseFromString(`<?xml version="1.0"?>
 		<p>
 			<xsl:value-of select='//channel/description' />
 		</p>
-		<div id='player'>
-			<audio controls="controls">
-				<!-- <source src="horse.ogg" type="audio/ogg"> -->
-				<!-- <source src="https://open.live.bbc.co.uk/mediaselector/6/redir/version/2.0/mediaset/audio-nondrm-download-low/proto/https/vpid/p0902c0s.mp3" type="audio/mpeg"/> -->
-				<source src="" type="audio/mpeg" />
-				Your browser does not support the audio element.
-			</audio>
-		</div>
 		<br />
 		<xsl:for-each select='//item'>
 			<card url='{*[starts-with(@url,"https:")]/@url}' on-tap='play'>
-				<i>
-					<xsl:value-of select='pubDate' />
-				</i>
+				<!-- <div class='date'>
+					<span class='day'>29</span>
+					<span class='month'>nov</span>
+				</div> -->
 				<h3>
 					<xsl:value-of select='title' />
 				</h3>
 				<p>
 					<xsl:value-of select='description' />
 				</p>
-				<a>
+				<!-- <a>
 					<xsl:value-of select='*[starts-with(@url,"https:")]/@url' />
-				</a>
+				</a> -->
+				<!-- <i>
+					<xsl:value-of select='pubDate' />
+				</i> -->
 			</card>
 		</xsl:for-each>
 	</xsl:template>
@@ -71,6 +67,9 @@ STYLE.appendChild(document.createTextNode(`img {
 		color: gray;
 		cursor: pointer;
 	}
+	i{font-size: 10px;}
+	p{font-size:14px; text-align: justify; margin: .2em 0;}
+h3{margin:0; padding:0;font-size: 17px; text-align: justify;}
 #player{
 	position: fixed;
 	bottom:0;
@@ -80,14 +79,16 @@ STYLE.appendChild(document.createTextNode(`img {
 }
 	card {
 		display: block;
-		margin: 1rem;
-		padding: 1rem;
+		margin: .5rem;
+		padding: .5rem;
 		background: #333;
+		/* clear: both;; */
 	}
 	card:hover {
 		background: #444;
 		cursor: pointer;
-	}`));
+	}
+	/* .date{float:left;height:100%} */`));
 function QQ(query, i) {
 	let result = Array.from(this.querySelectorAll(query));
 	return i ? result?.[i - 1] : result;
@@ -161,6 +162,15 @@ class WebTag extends HTMLElement {
 			});
 		});
 	}
+	$event(name, options) {
+		console.log('send EVENT', name, options)
+		this.dispatchEvent(new CustomEvent(name, {
+			bubbles: true,
+			composed: true,
+			cancelable: true,
+			detail: options
+		}));
+	}
 };
 class episode_list extends WebTag {
 		async $onReady() {
@@ -169,11 +179,7 @@ class episode_list extends WebTag {
 		}
 		play(node) {
 			let url = node.getAttribute('url')
-			console.log('play', url)
-			let player = this.$view.Q('audio', 1);
-			player.innerHTML = `<source src="${url}" type="audio/mpeg" />`;
-			player.load()
-			player.play();
+			this.$event('play',{url})
 		}
 	}
 window.customElements.define('episode-list', episode_list)

@@ -1,0 +1,119 @@
+<htm>
+	<input type="range" min="0" max="100" value="0" class="slider" id="myRange">
+
+	<div id='player'>
+		<audio controls="controls">
+			<!-- <source src="horse.ogg" type="audio/ogg"> -->
+			<!-- <source src="https://open.live.bbc.co.uk/mediaselector/6/redir/version/2.0/mediaset/audio-nondrm-download-low/proto/https/vpid/p0902c0s.mp3" type="audio/mpeg"/> -->
+			<source src="" type="audio/mpeg" />
+			Your browser does not support the audio element.
+		</audio>
+	</div>
+
+</htm>
+
+<style>
+	:host {
+		display: block;
+		background: #000;
+		height: 50px;
+		--front-mark: #aaf;
+		--back-back: #333;
+		--size: 20px;
+	}
+
+	audio {
+		display: none;
+	}
+
+
+	/* The slider itself */
+	.slider {
+		-webkit-appearance: none;
+		/* Override default CSS styles */
+		appearance: none;
+		width: 100%;
+		/* Full-width */
+		height: 25px;
+		/* Specified height */
+		background:var(--back-back);
+		/* Grey background */
+		outline: none;
+		/* Remove outline */
+		opacity: 0.7;
+		/* Set transparency (for mouse-over effects on hover) */
+		-webkit-transition: .2s;
+		/* 0.2 seconds transition on hover */
+		transition: opacity .2s;
+	}
+
+	/* Mouse-over effects */
+	.slider:hover {
+		opacity: 1;
+		/* Fully shown on mouse-over */
+	}
+
+	/* The slider handle (use -webkit- (Chrome, Opera, Safari, Edge) and -moz- (Firefox) to override default look) */
+	.slider::-webkit-slider-thumb {
+		-webkit-appearance: none;
+		/* Override default look */
+		appearance: none;
+		width: var(--size);
+		/* Set a specific slider handle width */
+		height: var(--size);
+		/* Slider handle height */
+		background: var(--front-mark);
+		/* Green background */
+		cursor: pointer;
+		/* Cursor on hover */
+		border-radius: var(--size);
+	}
+
+	.slider::-moz-range-thumb {
+		width: var(--size);
+		/* Set a specific slider handle width */
+		height: var(--size);
+		/* Slider handle height */
+		background: var(--front-mark);
+		/* Green background */
+		cursor: pointer;
+		/* Cursor on hover */
+		border-radius: var(--size);
+	}
+</style>
+
+<script>
+	class {
+		async $onReady() {
+			this.player = this.$view.Q('audio', 1);
+			this.slider = this.$view.Q('.slider', 1);
+			this.slider.addEventListener('input',e=>this.changePosition())
+			window.addEventListener('play', e => this.play(e.detail.url));
+			setInterval(() => this.updateSlider(), 1000);
+			// this.$data = await fetch(`https://podcasts.files.bbci.co.uk/p02nq0gn.rss`).then(x => x.text())
+			// console.log('data', this.$data)
+		}
+		play(url) {
+			// let url = node.getAttribute('url')
+			console.log('audio-play', url)
+			// this.$event('play', { url })
+			this.player.innerHTML = `<source src="${url}" type="audio/mpeg" />`;
+			this.player.load()
+			this.player.play();
+			// let src = this.$view.Q('audio>source', 1);
+			// console.log('src', src)
+			// src.setAttribute('src', url)
+			// this.$view.Q('audio', 1).play()
+		}
+		updateSlider(){
+			console.log('update slider')
+			console.log('time',this.player.currentTime,this.player.duration)
+			this.slider.setAttribute('max',this.player.duration)
+			this.slider.value = this.player.currentTime
+		}
+		changePosition(){
+			console.log('pos',this.slider.value)
+			this.player.currentTime = this.slider.value;
+		}
+	}
+</script>

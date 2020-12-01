@@ -25,6 +25,12 @@ XMLDocument.prototype.stringify = XML.stringify
 Element.prototype.stringify = XML.stringify
 const HTML = document.createElement('template');
 HTML.innerHTML = `<input type="range" min="0" max="100" value="0" class="slider" id="myRange">
+	<div id='controls'>
+		<span id='played'></span>
+		<!-- <button on-tap='play_pause'></button> -->
+		<img id='play_pause' src='../play.png' on-tap='play_pause' />
+		<span id='total'></span>
+	</div>
 	<div id='player'>
 		<audio controls="controls">
 			<!-- <source src="horse.ogg" type="audio/ogg"> -->
@@ -40,10 +46,14 @@ STYLE.appendChild(document.createTextNode(`:host {
 		height: 50px;
 		--front-mark: #aaf;
 		--back-back: #333;
-		--size: 20px;
+		--size: 30px;
 	}
 	audio {
 		display: none;
+	}
+	#play_pause {
+		width: 32px;
+		filter: invert(100%);
 	}
 	/* The slider itself */
 	.slider {
@@ -52,9 +62,9 @@ STYLE.appendChild(document.createTextNode(`:host {
 		appearance: none;
 		width: 100%;
 		/* Full-width */
-		height: 25px;
+		height: 7px;
 		/* Specified height */
-		background:var(--back-back);
+		background: var(--back-back);
 		/* Grey background */
 		outline: none;
 		/* Remove outline */
@@ -132,6 +142,7 @@ class WebTag extends HTMLElement {
 			}
 			catch { }
 		}
+		this.addEventListener('click', e => action(e, 'on-tap')); //: onTap
 	}
 	$applyHTML() {
 		this.$view = HTML.content.cloneNode(true)
@@ -159,13 +170,16 @@ class WebTag extends HTMLElement {
 		}));
 	}
 };
-class audio_player extends WebTag {
+function humanTime(sec) {
+		return String(Math.floor(sec / 60)).padStart(2, '0') + ':' + String(Math.floor(sec % 60)).padStart(2, '0')
+	}
+	class audio_player extends WebTag {
 		async $onReady() {
 			this.player = this.$view.Q('audio', 1);
 			this.slider = this.$view.Q('.slider', 1);
-			this.slider.addEventListener('input',e=>this.changePosition())
+			this.slider.addEventListener('input', e => this.changePosition())
 			window.addEventListener('play', e => this.play(e.detail.url));
-			setInterval(() => this.updateSlider(), 1000);
+			setInterval(() => this.update(), 500);
 		}
 		play(url) {
 			console.log('audio-play', url)
@@ -173,15 +187,24 @@ class audio_player extends WebTag {
 			this.player.load()
 			this.player.play();
 		}
-		updateSlider(){
+		update() {
 			console.log('update slider')
-			console.log('time',this.player.currentTime,this.player.duration)
-			this.slider.setAttribute('max',this.player.duration)
+			console.log('time', this.player.currentTime, this.player.duration)
+			this.slider.setAttribute('max', this.player.duration)
 			this.slider.value = this.player.currentTime
+			this.$view.Q('#played', 1).textContent = humanTime(this.player.currentTime)
+			this.$view.Q('#total', 1).textContent = humanTime(this.player.duration || 0)
+			this.$view.Q('#play_pause', 1).setAttribute('src', this.player.paused ? '../play.png' : '../pause.png')
 		}
-		changePosition(){
-			console.log('pos',this.slider.value)
+		changePosition() {
+			console.log('pos', this.slider.value)
 			this.player.currentTime = this.slider.value;
+			this.update()
+		}
+		play_pause(node) {
+			if (this.player.paused) this.player.play()
+			else this.player.pause()
+			this.update()
 		}
 	}
 window.customElements.define('audio-player', audio_player)

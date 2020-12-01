@@ -33,62 +33,74 @@ const XSLT = new DOMParser().parseFromString(`<?xml version="1.0"?>
 		<p>
 			<xsl:value-of select='//channel/description' />
 		</p>
-		<br />
-		<xsl:for-each select='//item'>
-			<card url='{*[starts-with(@url,"https:")]/@url}' on-tap='play'>
-				<!-- <div class='date'>
-					<span class='day'>29</span>
-					<span class='month'>nov</span>
-				</div> -->
-				<h3>
-					<xsl:value-of select='title' />
-				</h3>
-				<p>
-					<xsl:value-of select='description' />
-				</p>
-				<!-- <a>
-					<xsl:value-of select='*[starts-with(@url,"https:")]/@url' />
-				</a> -->
-				<!-- <i>
-					<xsl:value-of select='pubDate' />
-				</i> -->
-			</card>
-		</xsl:for-each>
+		<table class='stripes'>
+			<xsl:for-each select='//item'>
+				<tr url='{*[starts-with(@url,"https:")]/@url}' on-tap='play'>
+					<td class='date'>
+						<div class='month'>NOV</div>
+						<div class='day'>29</div>
+						<div class='year'>2020</div>
+					</td>
+					<td>
+						<h3>
+							<xsl:value-of select='title' />
+						</h3>
+						<p>
+							<xsl:value-of select='description' />
+						</p>
+					</td>
+				</tr>
+			</xsl:for-each>
+		</table>
 	</xsl:template>
 		</xsl:stylesheet>
 		`, 'text/xml');
 const XSLP = new XSLTProcessor();
 XSLP.importStylesheet(XSLT);
 let STYLE = document.createElement('style');
-STYLE.appendChild(document.createTextNode(`img {
+STYLE.appendChild(document.createTextNode(`@import url('https://max.pub/css/base.css');
+	@import url('https://max.pub/css/josefin.css');
+	img {
 		width: 100px;
 	}
-	a {
-		color: gray;
+	p {
+		font-size: 14px;
+		text-align: justify;
+		margin: .2em 0;
+		padding: .2em 0;
+	}
+	h3 {
+		margin: 0;
+		padding: 0;
+		font-size: 17px;
+		font-weight: 300;
+		text-align: justify;
+	}
+	.stripes tr:nth-child(2n) {
+		background: #2a2a2a;
+	}
+	td {
+		vertical-align: top;
+		padding: .3rem
+	}
+	td:hover {
+		background: var(--back-mark);
 		cursor: pointer;
 	}
-	i{font-size: 10px;}
-	p{font-size:14px; text-align: justify; margin: .2em 0;}
-h3{margin:0; padding:0;font-size: 17px; text-align: justify;}
-#player{
-	position: fixed;
-	bottom:0;
-	background: #000;
-	width: 50%;
-	padding: 1rem;
-}
-	card {
-		display: block;
-		margin: .5rem;
-		padding: .5rem;
-		background: #333;
-		/* clear: both;; */
+	.date>* {
+		font-weight: 100;
+		text-align: center;
+		color: silver;
 	}
-	card:hover {
-		background: #444;
-		cursor: pointer;
+	.year {
+		font-size: 10px;
 	}
-	/* .date{float:left;height:100%} */`));
+	.month {
+		font-size: 11px;
+	}
+	.day {
+		font-size: 22px;
+	}`));
 function QQ(query, i) {
 	let result = Array.from(this.querySelectorAll(query));
 	return i ? result?.[i - 1] : result;
@@ -179,7 +191,7 @@ class episode_list extends WebTag {
 		}
 		play(node) {
 			let url = node.getAttribute('url')
-			this.$event('play',{url})
+			this.$event('play', { url })
 		}
 	}
 window.customElements.define('episode-list', episode_list)

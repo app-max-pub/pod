@@ -7,15 +7,19 @@
 		<p>
 			<xsl:value-of select='//channel/description' />
 		</p>
-		<audio controls="controls">
-			<!-- <source src="horse.ogg" type="audio/ogg"> -->
-			<!-- <source src="https://open.live.bbc.co.uk/mediaselector/6/redir/version/2.0/mediaset/audio-nondrm-download-low/proto/https/vpid/p0902c0s.mp3" type="audio/mpeg"/> -->
-			<source src="" type="audio/mpeg" />
-			Your browser does not support the audio element.
-		</audio>
+
+		<div id='player'>
+			<audio controls="controls">
+				<!-- <source src="horse.ogg" type="audio/ogg"> -->
+				<!-- <source src="https://open.live.bbc.co.uk/mediaselector/6/redir/version/2.0/mediaset/audio-nondrm-download-low/proto/https/vpid/p0902c0s.mp3" type="audio/mpeg"/> -->
+				<source src="" type="audio/mpeg" />
+				Your browser does not support the audio element.
+			</audio>
+		</div>
+
 		<br />
 		<xsl:for-each select='//item'>
-			<card>
+			<card url='{*[starts-with(@url,"https:")]/@url}' on-tap='play'>
 				<i>
 					<xsl:value-of select='pubDate' />
 				</i>
@@ -26,7 +30,7 @@
 				<p>
 					<xsl:value-of select='description' />
 				</p>
-				<a on-tap='play'>
+				<a>
 					<xsl:value-of select='*[starts-with(@url,"https:")]/@url' />
 				</a>
 			</card>
@@ -44,12 +48,24 @@
 		cursor: pointer;
 	}
 
+#player{
+	position: fixed;
+	bottom:0;
+	background: #000;
+	width: 50%;
+	padding: 1rem;
+}
 
 	card {
 		display: block;
 		margin: 1rem;
 		padding: 1rem;
+		background: #333;
+	}
+
+	card:hover {
 		background: #444;
+		cursor: pointer;
 	}
 </style>
 
@@ -60,7 +76,7 @@
 			console.log('data', this.$data)
 		}
 		play(node) {
-			let url = node.textContent
+			let url = node.getAttribute('url')
 			console.log('play', url)
 			let player = this.$view.Q('audio', 1);
 			player.innerHTML = `<source src="${url}" type="audio/mpeg" />`;

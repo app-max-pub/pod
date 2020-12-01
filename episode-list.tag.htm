@@ -1,0 +1,75 @@
+<xsl>
+	<xsl:template match='*'>
+		<img src='{//channel/image/url}' />
+		<h1>
+			<xsl:value-of select='//channel/title' />
+		</h1>
+		<p>
+			<xsl:value-of select='//channel/description' />
+		</p>
+		<audio controls="controls">
+			<!-- <source src="horse.ogg" type="audio/ogg"> -->
+			<!-- <source src="https://open.live.bbc.co.uk/mediaselector/6/redir/version/2.0/mediaset/audio-nondrm-download-low/proto/https/vpid/p0902c0s.mp3" type="audio/mpeg"/> -->
+			<source src="" type="audio/mpeg" />
+			Your browser does not support the audio element.
+		</audio>
+		<br />
+		<xsl:for-each select='//item'>
+			<card>
+				<i>
+					<xsl:value-of select='pubDate' />
+				</i>
+				<h3>
+
+					<xsl:value-of select='title' />
+				</h3>
+				<p>
+					<xsl:value-of select='description' />
+				</p>
+				<a on-tap='play'>
+					<xsl:value-of select='*[starts-with(@url,"https:")]/@url' />
+				</a>
+			</card>
+		</xsl:for-each>
+	</xsl:template>
+</xsl>
+
+<style>
+	img {
+		width: 100px;
+	}
+
+	a {
+		color: gray;
+		cursor: pointer;
+	}
+
+
+	card {
+		display: block;
+		margin: 1rem;
+		padding: 1rem;
+		background: #444;
+	}
+</style>
+
+<script>
+	class {
+		async $onReady() {
+			this.$data = await fetch(`https://podcasts.files.bbci.co.uk/p02nq0gn.rss`).then(x => x.text())
+			console.log('data', this.$data)
+		}
+		play(node) {
+			let url = node.textContent
+			console.log('play', url)
+			let player = this.$view.Q('audio', 1);
+			player.innerHTML = `<source src="${url}" type="audio/mpeg" />`;
+			player.load()
+			player.play();
+			// let src = this.$view.Q('audio>source', 1);
+			// console.log('src', src)
+			// src.setAttribute('src', url)
+			// this.$view.Q('audio', 1).play()
+		}
+	}
+</script>

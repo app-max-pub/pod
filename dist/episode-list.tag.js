@@ -37,9 +37,12 @@ const XSLT = new DOMParser().parseFromString(`<?xml version="1.0"?>
 			<xsl:for-each select='//item'>
 				<tr url='{*[starts-with(@url,"https:")]/@url}' on-tap='play'>
 					<td class='date'>
-						<div class='month'>NOV</div>
+						<time-format class='month' time='{pubDate}' format='MMM'></time-format>
+						<time-format class='day' time='{pubDate}' format='DD'></time-format>
+						<time-format class='year' time='{pubDate}' format='YYYY'></time-format>
+						<!-- <div class='month'>NOV</div>
 						<div class='day'>29</div>
-						<div class='year'>2020</div>
+						<div class='year'>2020</div> -->
 					</td>
 					<td>
 						<h3>
@@ -91,12 +94,14 @@ STYLE.appendChild(document.createTextNode(`@import url('https://max.pub/css/base
 		font-weight: 100;
 		text-align: center;
 		color: silver;
+		display: block;
 	}
 	.year {
 		font-size: 10px;
 	}
 	.month {
 		font-size: 11px;
+		text-transform: uppercase;
 	}
 	.day {
 		font-size: 22px;
@@ -184,9 +189,18 @@ class WebTag extends HTMLElement {
 		}));
 	}
 };
-class episode_list extends WebTag {
+const list = {
+		bbc: `https://podcasts.files.bbci.co.uk/p02nq0gn.rss`, // bbc global news
+		freu: `https://beste-freundinnen.podigee.io/feed/mp3`, // beste freundinnen
+		handel: `https://handelsblatt-morningbriefing.podigee.io/feed/mp3`, // handelsblatt morning briefing
+		eco: `https://www.economist.com/media/rss/economist.xml`, // economist
+	}
+	import 'https://max.pub/time/dist/time-format.tag.js'
+	class episode_list extends WebTag {
 		async $onReady() {
-			this.$data = await fetch(`https://podcasts.files.bbci.co.uk/p02nq0gn.rss`).then(x => x.text())
+			let podcast = document.location.hash.slice(1) || 'bbc';
+			console.log('load',podcast)
+			this.$data = await fetch(list[podcast]).then(x => x.text())
 			console.log('data', this.$data)
 		}
 		play(node) {

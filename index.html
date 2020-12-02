@@ -1,9 +1,12 @@
+<link rel="manifest" href="/manifest.webmanifest" />
+
 <meta content='width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no'
 	name='viewport' />
 
 <style>
 	@import url('https://max.pub/css/base.css');
 	@import url('https://max.pub/css/josefin.css');
+	@import url('https://max.pub/css/fira.css');
 
 	audio-player {
 		position: fixed;
@@ -17,6 +20,7 @@
 	}
 </style>
 <script type='module'>
+	navigator.serviceWorker.register('sw.js');
 	import './dist/episode-list.tag.js';
 	import './dist/audio-player.tag.js';
 </script>

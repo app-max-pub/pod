@@ -26,10 +26,10 @@ Element.prototype.stringify = XML.stringify
 const HTML = document.createElement('template');
 HTML.innerHTML = `<input type="range" min="0" max="100" value="0" class="slider" id="myRange">
 	<div id='controls'>
-		<span id='played'></span>
+		<span id='played' class='monospace'></span>
 		<!-- <button on-tap='play_pause'></button> -->
 		<img id='play_pause' src='../play.png' on-tap='play_pause' />
-		<span id='total'></span>
+		<span id='total' class='monospace'></span>
 	</div>
 	<div id='player'>
 		<audio controls="controls">
@@ -40,7 +40,8 @@ HTML.innerHTML = `<input type="range" min="0" max="100" value="0" class="slider"
 		</audio>
 	</div>`;
 let STYLE = document.createElement('style');
-STYLE.appendChild(document.createTextNode(`:host {
+STYLE.appendChild(document.createTextNode(`@import url('https://max.pub/css/fira.css');
+	:host {
 		display: block;
 		background: #000;
 		height: 50px;
@@ -50,6 +51,9 @@ STYLE.appendChild(document.createTextNode(`:host {
 	}
 	audio {
 		display: none;
+	}
+	#controls{
+		font-size:12px;
 	}
 	#play_pause {
 		width: 32px;
@@ -188,8 +192,6 @@ function humanTime(sec) {
 			this.player.play();
 		}
 		update() {
-			console.log('update slider')
-			console.log('time', this.player.currentTime, this.player.duration)
 			this.slider.setAttribute('max', this.player.duration)
 			this.slider.value = this.player.currentTime
 			this.$view.Q('#played', 1).textContent = humanTime(this.player.currentTime)

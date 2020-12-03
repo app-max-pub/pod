@@ -1,39 +1,45 @@
 console.log('episode-list', import.meta.url);
-export default class XML {
-    static parse(string, type = 'text/xml') { // like JSON.parse
-        return new DOMParser().parseFromString(string.replace(/xmlns=".*?"/g, ''), type)
-    }
-    static stringify(DOM) { // like JSON.stringify
-        return new XMLSerializer().serializeToString(DOM).replace(/xmlns=".*?"/g, '')
-    }
-     static async fetch(url) {
-        return XML.parse(await fetch(url).then(x => x.text()))
-    }
-    static tag(tagName, attributes){
-        let tag = XML.parse(`<${tagName}/>`);
-        for(let key in attributes) tag.firstChild.setAttribute(key,attributes[key]);
-        return tag.firstChild;
-    }
-    static transform(xml, xsl, stringOutput = true) {
-        let processor = new XSLTProcessor();
-        processor.importStylesheet(typeof xsl == 'string' ? XML.parse(xsl) : xsl);
-        let output = processor.transformToDocument(typeof xml == 'string' ? XML.parse(xml) : xml);
-        return stringOutput ? XML.stringify(output) : output;
-    }
+function NODE(name, attributes = {}, children = []) {
+	let node = document.createElement(name);
+	for (let key in attributes)
+		node.setAttribute(key, attributes[key]);
+	for (let child of children)
+		node.appendChild(typeof child == 'string' ? document.createTextNode(child) : child);
+	return node;
+}
+class XML {
+	static parse(string, type = 'xml') {
+		return new DOMParser().parseFromString(string.replace(/xmlns=".*?"/g, ''), 'text/' + type)
+	}
+	static stringify(DOM) {
+		return new XMLSerializer().serializeToString(DOM).replace(/xmlns=".*?"/g, '')
+	}
 }
 XMLDocument.prototype.stringify = XML.stringify
 Element.prototype.stringify = XML.stringify
-const XSLT = new DOMParser().parseFromString(`<?xml version="1.0"?>
+function XSLT(xsl) {
+	let p = new XSLTProcessor();
+	p.importStylesheet(typeof xsl == 'string' ? XML.parse(xsl) : xsl);
+	return p;
+}
+XSLTProcessor.prototype.transform = function (xml) { return this.transformToFragment(typeof xml == 'string' ? XML.parse(xml) : xml, document) }
+const XSL = XSLT(`<?xml version="1.0"?>
 		<xsl:stylesheet version="1.0"  xmlns:xsl="http://www.w3.org/1999/XSL/Transform" >
 		<xsl:template match='*'>
-		<img src='{//channel/image/url}' />
-		<h1>
-			<xsl:value-of select='//channel/title' />
-		</h1>
-		<p>
-			<xsl:value-of select='//channel/description' />
-		</p>
-		<table class='stripes'>
+		<header>
+			<img src='{//channel/image/url}' />
+			<div>
+				<h1>
+					<xsl:value-of select='//channel/title' />
+				</h1>
+				<p>
+					<xsl:value-of select='//channel/description' />
+				</p>
+				<b>
+					<xsl:value-of select='count(//item)' /> episodes</b>
+			</div>
+		</header>
+		<table class=''>
 			<xsl:for-each select='//item'>
 				<tr url='{*[starts-with(@url,"https:")]/@url}' on-tap='play'>
 					<td class='date'>
@@ -52,17 +58,18 @@ const XSLT = new DOMParser().parseFromString(`<?xml version="1.0"?>
 							<xsl:value-of select='description' />
 						</p>
 					</td>
+					<td>
+						<img class='heart' src='../icons/heart0.png' />
+					</td>
 				</tr>
 			</xsl:for-each>
 		</table>
 	</xsl:template>
 		</xsl:stylesheet>
-		`, 'text/xml');
-const XSLP = new XSLTProcessor();
-XSLP.importStylesheet(XSLT);
+		`);
 let STYLE = document.createElement('style');
 STYLE.appendChild(document.createTextNode(`@import url('https://max.pub/css/base.css');
-	@import url('https://max.pub/css/josefin.css');
+	/* @import url('https://max.pub/css/publicSans.css'); */
 	img {
 		width: 100px;
 	}
@@ -71,7 +78,25 @@ STYLE.appendChild(document.createTextNode(`@import url('https://max.pub/css/base
 		text-align: justify;
 		margin: .2em 0;
 		padding: .2em 0;
+		font-weight: 100;
 	}
+	header p {
+		text-align: center;
+		margin: 1rem;
+	}
+	header {
+		margin-bottom: 3rem;
+		/* display: flex; */
+	}
+	header img{
+		width: 300px;
+		height: 300px;
+	}
+	.heart {
+		width: 32px;
+		filter: invert(100%);
+	}
+	h1{margin:1rem;padding:0;}
 	h3 {
 		margin: 0;
 		padding: 0;
@@ -79,15 +104,16 @@ STYLE.appendChild(document.createTextNode(`@import url('https://max.pub/css/base
 		font-weight: 300;
 		text-align: justify;
 	}
-	.stripes tr:nth-child(2n) {
-		background: #2a2a2a;
-	}
+	/* tr{border: 5px solid red;} */
+	/* .stripes tr:nth-child(2n) {
+		background: var(--back-back);
+	} */
 	td {
-		vertical-align: top;
-		padding: .3rem
+		/* vertical-align: top; */
+		padding: .8rem .4rem;
 	}
-	td:hover {
-		background: var(--back-mark);
+	tr:hover {
+		background: var(--back-mark) !important;
 		cursor: pointer;
 	}
 	.date>* {
@@ -171,16 +197,14 @@ class WebTag extends HTMLElement {
 	$render(events) {
 		return new Promise((resolve, reject) => {
 			window.requestAnimationFrame(t => {
-				const t1 = new Date().getTime();
-				let xml = new DOMParser().parseFromString(new XMLSerializer().serializeToString(this).replace(/xmlns=".*?"/g, ''), 'text/xml'); // some platforms need to reparse the xml
-				let output = XSLP.transformToFragment(xml, document);
+				let xml = XML.parse(XML.stringify(this))  // some platforms need to reparse the xml
+				let output = XSL.transform(xml);
 				this.$view = output;
 				resolve()
 			});
 		});
 	}
 	$event(name, options) {
-		console.log('send EVENT', name, options)
 		this.dispatchEvent(new CustomEvent(name, {
 			bubbles: true,
 			composed: true,
@@ -199,7 +223,7 @@ const list = {
 	class episode_list extends WebTag {
 		async $onReady() {
 			let podcast = document.location.hash.slice(1) || 'bbc';
-			console.log('load',podcast)
+			console.log('load', podcast)
 			this.$data = await fetch(list[podcast]).then(x => x.text())
 			console.log('data', this.$data)
 		}

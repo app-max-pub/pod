@@ -1,35 +1,43 @@
 console.log('audio-player', import.meta.url);
-export default class XML {
-    static parse(string, type = 'text/xml') { // like JSON.parse
-        return new DOMParser().parseFromString(string.replace(/xmlns=".*?"/g, ''), type)
-    }
-    static stringify(DOM) { // like JSON.stringify
-        return new XMLSerializer().serializeToString(DOM).replace(/xmlns=".*?"/g, '')
-    }
-     static async fetch(url) {
-        return XML.parse(await fetch(url).then(x => x.text()))
-    }
-    static tag(tagName, attributes){
-        let tag = XML.parse(`<${tagName}/>`);
-        for(let key in attributes) tag.firstChild.setAttribute(key,attributes[key]);
-        return tag.firstChild;
-    }
-    static transform(xml, xsl, stringOutput = true) {
-        let processor = new XSLTProcessor();
-        processor.importStylesheet(typeof xsl == 'string' ? XML.parse(xsl) : xsl);
-        let output = processor.transformToDocument(typeof xml == 'string' ? XML.parse(xml) : xml);
-        return stringOutput ? XML.stringify(output) : output;
-    }
+function NODE(name, attributes = {}, children = []) {
+	let node = document.createElement(name);
+	for (let key in attributes)
+		node.setAttribute(key, attributes[key]);
+	for (let child of children)
+		node.appendChild(typeof child == 'string' ? document.createTextNode(child) : child);
+	return node;
+}
+class XML {
+	static parse(string, type = 'xml') {
+		return new DOMParser().parseFromString(string.replace(/xmlns=".*?"/g, ''), 'text/' + type)
+	}
+	static stringify(DOM) {
+		return new XMLSerializer().serializeToString(DOM).replace(/xmlns=".*?"/g, '')
+	}
 }
 XMLDocument.prototype.stringify = XML.stringify
 Element.prototype.stringify = XML.stringify
 const HTML = document.createElement('template');
 HTML.innerHTML = `<input type="range" min="0" max="100" value="0" class="slider" id="myRange">
 	<div id='controls'>
-		<span id='played' class='monospace'></span>
-		<!-- <button on-tap='play_pause'></button> -->
-		<img id='play_pause' src='../play.png' on-tap='play_pause' />
-		<span id='total' class='monospace'></span>
+		<div>
+			<img src='../icons/volume_down.png' on-tap='volume' volume='-0.1' />
+			<span id='volume'>100%</span>
+			<img src='../icons/volume_up.png' on-tap='volume' volume='+0.1' />
+		</div>
+		<div>
+			<img src='../icons/backward.png' on-tap='backward' />
+			<span id='played' class=''></span>
+			<!-- <button on-tap='play_pause'></button> -->
+			<img id='play_pause' src='../icons/play.png' on-tap='play_pause' />
+			<span id='total' class=''></span>
+			<img src='../icons/forward.png' on-tap='forward' />
+		</div>
+		<div>
+			<img src='../icons/slower.png' on-tap='speed' speed='-0.1' />
+			<span id='speed'>100%</span>
+			<img src='../icons/faster.png' on-tap='speed' speed='+0.1' />
+		</div>
 	</div>
 	<div id='player'>
 		<audio controls="controls">
@@ -47,17 +55,26 @@ STYLE.appendChild(document.createTextNode(`@import url('https://max.pub/css/fira
 		height: 50px;
 		--front-mark: #aaf;
 		--back-back: #333;
-		--size: 30px;
+		--size: 25px;
 	}
 	audio {
 		display: none;
 	}
-	#controls{
-		font-size:12px;
+	#controls {
+		font-size: 12px;
+		display: flex;
+		justify-content: space-around;
 	}
-	#play_pause {
+	#controls span{
+		font-size: 15px;
+		line-height: 32px;
+		vertical-align: top;
+		display: inline-block
+	}
+	#controls img {
 		width: 32px;
 		filter: invert(100%);
+		display: inline-block;
 	}
 	/* The slider itself */
 	.slider {
@@ -71,12 +88,13 @@ STYLE.appendChild(document.createTextNode(`@import url('https://max.pub/css/fira
 		background: var(--back-back);
 		/* Grey background */
 		outline: none;
+		border-radius: 10px;
 		/* Remove outline */
-		opacity: 0.7;
+		/* opacity: 0.7; */
 		/* Set transparency (for mouse-over effects on hover) */
-		-webkit-transition: .2s;
+		/* -webkit-transition: .2s; */
 		/* 0.2 seconds transition on hover */
-		transition: opacity .2s;
+		/* transition: opacity .2s; */
 	}
 	/* Mouse-over effects */
 	.slider:hover {
@@ -165,7 +183,6 @@ class WebTag extends HTMLElement {
 		this.$view.appendChild(HTML);
 	}
 	$event(name, options) {
-		console.log('send EVENT', name, options)
 		this.dispatchEvent(new CustomEvent(name, {
 			bubbles: true,
 			composed: true,
@@ -196,7 +213,9 @@ function humanTime(sec) {
 			this.slider.value = this.player.currentTime
 			this.$view.Q('#played', 1).textContent = humanTime(this.player.currentTime)
 			this.$view.Q('#total', 1).textContent = humanTime(this.player.duration || 0)
-			this.$view.Q('#play_pause', 1).setAttribute('src', this.player.paused ? '../play.png' : '../pause.png')
+			this.$view.Q('#play_pause', 1).setAttribute('src', '../icons/' + (this.player.paused ? 'play.png' : 'pause.png'))
+			this.$view.Q('#speed', 1).textContent = Math.round(this.player.playbackRate * 100) + '%'
+			this.$view.Q('#volume', 1).textContent = Math.round(this.player.volume * 100) + '%'
 		}
 		changePosition() {
 			console.log('pos', this.slider.value)
@@ -206,6 +225,22 @@ function humanTime(sec) {
 		play_pause(node) {
 			if (this.player.paused) this.player.play()
 			else this.player.pause()
+			this.update()
+		}
+		forward() {
+			this.player.currentTime += 30;
+			this.update()
+		}
+		backward() {
+			this.player.currentTime -= 15;
+			this.update()
+		}
+		speed(node) {
+			this.player.playbackRate += node.getAttribute('speed') * 1;
+			this.update()
+		}
+		volume(node) {
+			this.player.volume += node.getAttribute('volume') * 1;
 			this.update()
 		}
 	}

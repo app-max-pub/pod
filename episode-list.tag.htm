@@ -1,16 +1,21 @@
 <xsl>
 	<xsl:template match='*'>
-		<img src='{//channel/image/url}' />
-		<h1>
-			<xsl:value-of select='//channel/title' />
-		</h1>
-		<p>
-			<xsl:value-of select='//channel/description' />
-		</p>
+		<header>
+			<img src='{//channel/image/url}' />
+			<div>
+				<h1>
+					<xsl:value-of select='//channel/title' />
+				</h1>
+				<p>
+					<xsl:value-of select='//channel/description' />
+				</p>
+				<b>
+					<xsl:value-of select='count(//item)' /> episodes</b>
+			</div>
+		</header>
 
 
-
-		<table class='stripes'>
+		<table class=''>
 			<xsl:for-each select='//item'>
 				<tr url='{*[starts-with(@url,"https:")]/@url}' on-tap='play'>
 					<td class='date'>
@@ -30,6 +35,9 @@
 							<xsl:value-of select='description' />
 						</p>
 					</td>
+					<td>
+						<img class='heart' src='../icons/heart0.png' />
+					</td>
 				</tr>
 			</xsl:for-each>
 		</table>
@@ -38,7 +46,7 @@
 
 <style>
 	@import url('https://max.pub/css/base.css');
-	@import url('https://max.pub/css/josefin.css');
+	/* @import url('https://max.pub/css/publicSans.css'); */
 
 	img {
 		width: 100px;
@@ -50,8 +58,28 @@
 		text-align: justify;
 		margin: .2em 0;
 		padding: .2em 0;
+		font-weight: 100;
 	}
 
+	header p {
+		text-align: center;
+		margin: 1rem;
+	}
+
+	header {
+		margin-bottom: 3rem;
+		/* display: flex; */
+	}
+	header img{
+		width: 300px;
+		height: 300px;
+	}
+
+	.heart {
+		width: 32px;
+		filter: invert(100%);
+	}
+	h1{margin:1rem;padding:0;}
 	h3 {
 		margin: 0;
 		padding: 0;
@@ -60,17 +88,18 @@
 		text-align: justify;
 	}
 
-	.stripes tr:nth-child(2n) {
-		background: #2a2a2a;
-	}
+	/* tr{border: 5px solid red;} */
+	/* .stripes tr:nth-child(2n) {
+		background: var(--back-back);
+	} */
 
 	td {
-		vertical-align: top;
-		padding: .3rem
+		/* vertical-align: top; */
+		padding: .8rem .4rem;
 	}
 
-	td:hover {
-		background: var(--back-mark);
+	tr:hover {
+		background: var(--back-mark) !important;
 		cursor: pointer;
 	}
 
@@ -106,7 +135,7 @@
 	class {
 		async $onReady() {
 			let podcast = document.location.hash.slice(1) || 'bbc';
-			console.log('load',podcast)
+			console.log('load', podcast)
 			this.$data = await fetch(list[podcast]).then(x => x.text())
 			console.log('data', this.$data)
 		}

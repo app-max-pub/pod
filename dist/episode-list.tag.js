@@ -49,17 +49,22 @@ const XSL = XSLT(`<?xml version="1.0"?>
 						<!-- <div class='month'>NOV</div>
 						<div class='day'>29</div>
 						<div class='year'>2020</div> -->
+						<img class='heart' src='../icons/heart0.png' />
+						<duration-format duration="{*[local-name()='duration']}">
+							<xsl:value-of select="*[local-name()='duration']" />
+						</duration-format>
 					</td>
 					<td>
 						<h3>
 							<xsl:value-of select='title' />
 						</h3>
 						<p>
-							<xsl:value-of select='description' />
+							<!-- <xsl:value-of select='description' /> -->
+							<xsl:value-of select="*[local-name()='summary']" />
 						</p>
 					</td>
 					<td>
-						<img class='heart' src='../icons/heart0.png' />
+						<!-- <img class='heart' src='../icons/heart0.png' /> -->
 					</td>
 				</tr>
 			</xsl:for-each>
@@ -88,15 +93,22 @@ STYLE.appendChild(document.createTextNode(`@import url('https://max.pub/css/base
 		margin-bottom: 3rem;
 		/* display: flex; */
 	}
-	header img{
+	header img {
 		width: 300px;
 		height: 300px;
 	}
 	.heart {
-		width: 32px;
+		width: 24px;
 		filter: invert(100%);
+		margin: 7px auto;
 	}
-	h1{margin:1rem;padding:0;}
+	duration-format{
+		font-size: 11px;
+	}
+	h1 {
+		margin: 1rem;
+		padding: 0;
+	}
 	h3 {
 		margin: 0;
 		padding: 0;
@@ -116,6 +128,7 @@ STYLE.appendChild(document.createTextNode(`@import url('https://max.pub/css/base
 		background: var(--back-mark) !important;
 		cursor: pointer;
 	}
+	/* .date{text-align: center;} */
 	.date>* {
 		font-weight: 100;
 		text-align: center;
@@ -218,8 +231,10 @@ const list = {
 		freu: `https://beste-freundinnen.podigee.io/feed/mp3`, // beste freundinnen
 		handel: `https://handelsblatt-morningbriefing.podigee.io/feed/mp3`, // handelsblatt morning briefing
 		eco: `https://www.economist.com/media/rss/economist.xml`, // economist
+		nyt: `https://rss.art19.com/the-daily`,// nyt the daily
 	}
 	import 'https://max.pub/time/dist/time-format.tag.js'
+	import './duration-format.tag.js';
 	class episode_list extends WebTag {
 		async $onReady() {
 			let podcast = document.location.hash.slice(1) || 'bbc';

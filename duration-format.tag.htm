@@ -1,0 +1,12 @@
+<htm></htm>
+<style></style>
+<script>
+	class {
+		$onFrameChange() {
+			let total = this.A.duration * 1;
+			let mm = String(Math.floor(total / 60)).padStart(2,'0')
+			let ss = String(Math.floor(total % 60)).padStart(2,'0')
+			this.$view.textContent = mm + ':' + ss
+		}
+	}
+</script>

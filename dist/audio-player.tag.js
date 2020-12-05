@@ -61,6 +61,7 @@ STYLE.appendChild(document.createTextNode(`@import url('https://max.pub/css/fira
 		--front-mark: #aaf;
 		--back-back: #333;
 		--size: 25px;
+		touch-action: manipulation;
 	}
 	* {
 		touch-action: manipulation;

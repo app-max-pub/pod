@@ -62,6 +62,9 @@ STYLE.appendChild(document.createTextNode(`@import url('https://max.pub/css/fira
 		--back-back: #333;
 		--size: 25px;
 	}
+	* {
+		touch-action: manipulation;
+	}
 	#notification {
 		position: absolute;
 		top: -10px;

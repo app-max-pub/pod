@@ -18,18 +18,21 @@
 		<table class=''>
 			<xsl:for-each select='//item'>
 				<tr url='{*[starts-with(@url,"https:")]/@url}' on-tap='play'>
-					<td class='date'>
-						<time-format class='month' time='{pubDate}' format='MMM'></time-format>
-						<time-format class='day' time='{pubDate}' format='DD'></time-format>
-						<time-format class='year' time='{pubDate}' format='YYYY'></time-format>
-						<!-- <div class='month'>NOV</div>
+					<td class='meta'>
+						<div>
+							<div class='date'>
+								<time-format class='month' time='{pubDate}' format='MMM'></time-format>
+								<time-format class='day' time='{pubDate}' format='DD'></time-format>
+								<time-format class='year' time='{pubDate}' format='YYYY'></time-format>
+							</div>
+							<!-- <div class='month'>NOV</div>
 						<div class='day'>29</div>
 						<div class='year'>2020</div> -->
-						<img class='heart' src='../icons/heart0.png' />
-						<duration-format duration="{*[local-name()='duration']}">
-							<xsl:value-of select="*[local-name()='duration']" />
-						</duration-format>
-
+							<img class='heart' src='../icons/heart0.png' />
+							<duration-format duration="{*[local-name()='duration']}">
+								<xsl:value-of select="*[local-name()='duration']" />
+							</duration-format>
+						</div>
 					</td>
 					<td>
 						<h3>
@@ -87,7 +90,8 @@
 		filter: invert(100%);
 		margin: 7px auto;
 	}
-	duration-format{
+
+	duration-format {
 		font-size: 11px;
 	}
 
@@ -117,6 +121,15 @@
 	tr:hover {
 		background: var(--back-mark) !important;
 		cursor: pointer;
+	}
+	.meta{
+		height:100%;
+	}
+	.meta>div {
+		display: flex;
+		flex-direction: column;
+		justify-content: space-between;
+		height: 100%;
 	}
 
 	/* .date{text-align: center;} */

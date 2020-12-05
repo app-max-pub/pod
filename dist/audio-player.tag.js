@@ -18,26 +18,30 @@ class XML {
 XMLDocument.prototype.stringify = XML.stringify
 Element.prototype.stringify = XML.stringify
 const HTML = document.createElement('template');
-HTML.innerHTML = `<input type="range" min="0" max="100" value="0" class="slider" id="myRange">
+HTML.innerHTML = `<div id='position'>
+		<span id='played' class=''></span>
+		<input id='slider' type="range" min="0" max="100" value="0">
+		<span id='total' class=''></span>
+	</div>
 	<div id='controls'>
-		<div>
-			<img src='../icons/volume_down.png' on-tap='volume' volume='-0.1' />
-			<span id='volume'>100%</span>
-			<img src='../icons/volume_up.png' on-tap='volume' volume='+0.1' />
-		</div>
-		<div>
-			<img src='../icons/backward.png' on-tap='backward' />
-			<span id='played' class=''></span>
-			<!-- <button on-tap='play_pause'></button> -->
-			<img id='play_pause' src='../icons/play.png' on-tap='play_pause' />
-			<span id='total' class=''></span>
-			<img src='../icons/forward.png' on-tap='forward' />
-		</div>
-		<div>
-			<img src='../icons/slower.png' on-tap='speed' speed='-0.1' />
-			<span id='speed'>100%</span>
-			<img src='../icons/faster.png' on-tap='speed' speed='+0.1' />
-		</div>
+		<!-- <div> -->
+		<img src='../icons/volume_down.png' on-tap='volume' volume='-0.1' />
+		<!-- <span id='volume'>100%</span> -->
+		<img src='../icons/volume_up.png' on-tap='volume' volume='+0.1' />
+		<!-- </div> -->
+		<!-- <div> -->
+		<img src='../icons/backward.png' on-tap='backward' />
+		<!-- <span id='played' class=''></span> -->
+		<!-- <button on-tap='play_pause'></button> -->
+		<img id='play_pause' src='../icons/play.png' on-tap='play_pause' />
+		<!-- <span id='total' class=''></span> -->
+		<img src='../icons/forward.png' on-tap='forward' />
+		<!-- </div> -->
+		<!-- <div> -->
+		<img src='../icons/slower.png' on-tap='speed' speed='-0.1' />
+		<!-- <span id='speed'>100%</span> -->
+		<img src='../icons/faster.png' on-tap='speed' speed='+0.1' />
+		<!-- </div> -->
 	</div>
 	<div id='player'>
 		<audio controls="controls">
@@ -46,26 +50,45 @@ HTML.innerHTML = `<input type="range" min="0" max="100" value="0" class="slider"
 			<source src="" type="audio/mpeg" />
 			Your browser does not support the audio element.
 		</audio>
-	</div>`;
+	</div>
+	<div id='notification'>aa</div>`;
 let STYLE = document.createElement('style');
 STYLE.appendChild(document.createTextNode(`@import url('https://max.pub/css/fira.css');
 	:host {
 		display: block;
 		background: #000;
-		height: 50px;
+		/* height: 50px; */
 		--front-mark: #aaf;
 		--back-back: #333;
 		--size: 25px;
 	}
+	#notification {
+		position: absolute;
+		top: -10px;
+		margin: 0 auto;
+		left: 50%;
+		transform: translateX(-50%);
+		background: gray;
+		padding: .1em .3em;
+	}
 	audio {
 		display: none;
 	}
+	#position {
+		display: flex;
+		justify-content: space-between;
+		font-size: 11px;
+		/* height: 20px; */
+		/* margin-bottom:.5rem; */
+		/* border: 1px solid red */
+	}
 	#controls {
-		font-size: 12px;
+		/* font-size: 12px; */
 		display: flex;
 		justify-content: space-around;
+		padding: .5rem
 	}
-	#controls span{
+	#controls span {
 		font-size: 15px;
 		line-height: 32px;
 		vertical-align: top;
@@ -77,7 +100,7 @@ STYLE.appendChild(document.createTextNode(`@import url('https://max.pub/css/fira
 		display: inline-block;
 	}
 	/* The slider itself */
-	.slider {
+	#slider {
 		-webkit-appearance: none;
 		/* Override default CSS styles */
 		appearance: none;
@@ -97,12 +120,12 @@ STYLE.appendChild(document.createTextNode(`@import url('https://max.pub/css/fira
 		/* transition: opacity .2s; */
 	}
 	/* Mouse-over effects */
-	.slider:hover {
+	#slider:hover {
 		opacity: 1;
 		/* Fully shown on mouse-over */
 	}
 	/* The slider handle (use -webkit- (Chrome, Opera, Safari, Edge) and -moz- (Firefox) to override default look) */
-	.slider::-webkit-slider-thumb {
+	#slider::-webkit-slider-thumb {
 		-webkit-appearance: none;
 		/* Override default look */
 		appearance: none;
@@ -116,7 +139,7 @@ STYLE.appendChild(document.createTextNode(`@import url('https://max.pub/css/fira
 		/* Cursor on hover */
 		border-radius: var(--size);
 	}
-	.slider::-moz-range-thumb {
+	#slider::-moz-range-thumb {
 		width: var(--size);
 		/* Set a specific slider handle width */
 		height: var(--size);
@@ -197,7 +220,8 @@ function humanTime(sec) {
 	class audio_player extends WebTag {
 		async $onReady() {
 			this.player = this.$view.Q('audio', 1);
-			this.slider = this.$view.Q('.slider', 1);
+			this.noti = this.$view.Q('#notification', 1);
+			this.slider = this.$view.Q('#slider', 1);
 			this.slider.addEventListener('input', e => this.changePosition())
 			window.addEventListener('play', e => this.play(e.detail.url));
 			setInterval(() => this.update(), 500);
@@ -214,8 +238,6 @@ function humanTime(sec) {
 			this.$view.Q('#played', 1).textContent = humanTime(this.player.currentTime)
 			this.$view.Q('#total', 1).textContent = humanTime(this.player.duration || 0)
 			this.$view.Q('#play_pause', 1).setAttribute('src', '../icons/' + (this.player.paused ? 'play.png' : 'pause.png'))
-			this.$view.Q('#speed', 1).textContent = Math.round(this.player.playbackRate * 100) + '%'
-			this.$view.Q('#volume', 1).textContent = Math.round(this.player.volume * 100) + '%'
 		}
 		changePosition() {
 			console.log('pos', this.slider.value)
@@ -238,10 +260,17 @@ function humanTime(sec) {
 		speed(node) {
 			this.player.playbackRate += node.getAttribute('speed') * 1;
 			this.update()
+			this.notify(Math.round(this.player.playbackRate * 100) + '% speed')
 		}
 		volume(node) {
 			this.player.volume += node.getAttribute('volume') * 1;
 			this.update()
+			this.notify(Math.round(this.player.volume * 100) + '% volume')
+		}
+		notify(text) {
+			this.noti.textContent = text;
+			this.noti.hidden = false;
+			setTimeout(e => this.noti.hidden = true, 1000)
 		}
 	}
 window.customElements.define('audio-player', audio_player)

@@ -51,7 +51,7 @@ HTML.innerHTML = `<div id='position'>
 			Your browser does not support the audio element.
 		</audio>
 	</div>
-	<div id='notification'>aa</div>`;
+	<div id='notification'></div>`;
 let STYLE = document.createElement('style');
 STYLE.appendChild(document.createTextNode(`@import url('https://max.pub/css/fira.css');
 	:host {
@@ -70,6 +70,7 @@ STYLE.appendChild(document.createTextNode(`@import url('https://max.pub/css/fira
 		transform: translateX(-50%);
 		background: gray;
 		padding: .1em .3em;
+		border-radius: 5px;
 	}
 	audio {
 		display: none;
@@ -96,8 +97,9 @@ STYLE.appendChild(document.createTextNode(`@import url('https://max.pub/css/fira
 	}
 	#controls img {
 		width: 32px;
+		height: 32px;
 		filter: invert(100%);
-		display: inline-block;
+		/* display: inline-block; */
 	}
 	/* The slider itself */
 	#slider {
@@ -263,14 +265,17 @@ function humanTime(sec) {
 			this.notify(Math.round(this.player.playbackRate * 100) + '% speed')
 		}
 		volume(node) {
-			this.player.volume += node.getAttribute('volume') * 1;
+			try { // increasing over 100% throws
+				this.player.volume += node.getAttribute('volume') * 1;
+			} catch { }
 			this.update()
 			this.notify(Math.round(this.player.volume * 100) + '% volume')
 		}
 		notify(text) {
+			if (this.timeout) clearTimeout(this.timeout)
 			this.noti.textContent = text;
 			this.noti.hidden = false;
-			setTimeout(e => this.noti.hidden = true, 1000)
+			this.timeout = setTimeout(e => this.noti.hidden = true, 1000)
 		}
 	}
 window.customElements.define('audio-player', audio_player)

@@ -246,7 +246,7 @@ const list = {
 		eco: `https://www.economist.com/media/rss/economist.xml`, // economist
 		nyt: `https://rss.art19.com/the-daily`,// nyt the daily
 	}
-	import 'https://max.pub/time/dist/time-format.tag.js'
+	import 'https://tag.max.pub/time/dist/time-format.tag.js'
 	import './duration-format.tag.js';
 	class episode_list extends WebTag {
 		async $onReady() {

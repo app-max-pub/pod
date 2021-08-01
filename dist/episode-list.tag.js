@@ -44,7 +44,7 @@ const XSL = XSLT(`<?xml version="1.0"?>
 			<xsl:for-each select='//item'>
 				<tr url='{*[starts-with(@url,"https:")]/@url}' on-tap='play'>
 					<td class='meta'>
-						<div class='v-strech'>
+						<div class='v-stack'>
 							<div class='date'>
 								<time-format class='month' time='{pubDate}' format='MMM'></time-format>
 								<time-format class='day' time='{pubDate}' format='DD'></time-format>
@@ -59,13 +59,14 @@ const XSL = XSLT(`<?xml version="1.0"?>
 							</duration-format>
 						</div>
 					</td>
-					<td>
+					<td class='text'>
 						<h3>
 							<xsl:value-of select='title' />
 						</h3>
 						<p>
 							<!-- <xsl:value-of select='description' /> -->
-							<xsl:value-of select="*[local-name()='summary']" />
+							<!-- <xsl:value-of select="*[local-name()='summary']" /> -->
+							<xsl:value-of select="substring(*[local-name()='summary'],0,500)" />
 						</p>
 					</td>
 					<td>
@@ -125,32 +126,33 @@ STYLE.appendChild(document.createTextNode(`@import url('https://max.pub/css/base
 	/* .stripes tr:nth-child(2n) {
 		background: var(--back-back);
 	} */
-	td {
-		/* vertical-align: top; */
-		padding: 1.8rem .4rem;
+	table {
+		width: 100%;
 	}
 	tr {
 		/* stupid bug. only this fake height lets a div fill a table cell */
 		/* https://stackoverflow.com/questions/3215553/make-a-div-fill-an-entire-table-cell */
-		height: 1px; 
+		height: 1px;
 	}
 	td {
 		height: inherit;
+		padding: 1.8rem .4rem;
+		/* width:100%; */
 	}
 	tr:hover {
 		background: var(--back-mark) !important;
 		cursor: pointer;
 	}
-	.meta {
-		/* height: 100%; */
-	}
-	.meta>div {
+	/* .meta {
+		height: 100%;
+	} */
+	/* .meta>div {
 		display: flex;
 		flex-direction: column;
 		justify-content: space-around;
 		height: 100%;
 		flex: 1;
-	}
+	} */
 	/* .date{text-align: center;} */
 	.date>* {
 		font-weight: 100;

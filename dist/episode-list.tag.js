@@ -36,7 +36,8 @@ const XSL = XSLT(`<?xml version="1.0"?>
 					<xsl:value-of select='//channel/description' />
 				</p>
 				<b>
-					<xsl:value-of select='count(//item)' /> episodes</b>
+					<xsl:value-of select='count(//item)' /> episodes
+				</b>
 			</div>
 		</header>
 		<table class=''>
@@ -132,8 +133,8 @@ STYLE.appendChild(document.createTextNode(`@import url('https://max.pub/css/base
 		background: var(--back-mark) !important;
 		cursor: pointer;
 	}
-	.meta{
-		height:100%;
+	.meta {
+		height: 100%;
 	}
 	.meta>div {
 		display: flex;
@@ -240,20 +241,22 @@ class WebTag extends HTMLElement {
 	}
 };
 const list = {
+		his2go: `https://his2go.podigee.io/feed/mp3`,
 		bbc: `https://podcasts.files.bbci.co.uk/p02nq0gn.rss`, // bbc global news
 		freu: `https://beste-freundinnen.podigee.io/feed/mp3`, // beste freundinnen
 		handel: `https://handelsblatt-morningbriefing.podigee.io/feed/mp3`, // handelsblatt morning briefing
 		eco: `https://www.economist.com/media/rss/economist.xml`, // economist
 		nyt: `https://rss.art19.com/the-daily`,// nyt the daily
 	}
-	import 'https://tag.max.pub/time/dist/time-format.tag.js'
+	import 'https://v.max.pub/@tag-max-pub/time/2021/dist/time-format.tag.js'
 	import './duration-format.tag.js';
 	class episode_list extends WebTag {
 		async $onReady() {
 			let podcast = document.location.hash.slice(1) || 'bbc';
 			console.log('load', podcast)
-			this.$data = await fetch(list[podcast]).then(x => x.text())
-			console.log('data', this.$data)
+			let data = await fetch(list[podcast]).then(x => x.text())
+			console.log('data', data)
+			this.$data = data
 		}
 		play(node) {
 			let url = node.getAttribute('url')

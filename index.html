@@ -14,14 +14,18 @@
 		left: 0;
 		width: 100vw;
 	}
-	body{background: #000}
+
+	body {
+		background: #000
+	}
+
 	article {
 		padding: 0;
 		background: #111
 	}
 </style>
 <script type='module'>
-	navigator.serviceWorker.register('sw.js');
+	// navigator.serviceWorker.register('sw.js');
 	import './dist/episode-list.tag.js';
 	import './dist/audio-player.tag.js';
 </script>

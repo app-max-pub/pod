@@ -44,7 +44,7 @@ const XSL = XSLT(`<?xml version="1.0"?>
 			<xsl:for-each select='//item'>
 				<tr url='{*[starts-with(@url,"https:")]/@url}' on-tap='play'>
 					<td class='meta'>
-						<div>
+						<div class='v-strech'>
 							<div class='date'>
 								<time-format class='month' time='{pubDate}' format='MMM'></time-format>
 								<time-format class='day' time='{pubDate}' format='DD'></time-format>
@@ -91,7 +91,7 @@ STYLE.appendChild(document.createTextNode(`@import url('https://max.pub/css/base
 		font-weight: 100;
 	}
 	header p {
-		text-align: center;
+		text-align: justify;
 		margin: 1rem;
 	}
 	header {
@@ -127,20 +127,29 @@ STYLE.appendChild(document.createTextNode(`@import url('https://max.pub/css/base
 	} */
 	td {
 		/* vertical-align: top; */
-		padding: .8rem .4rem;
+		padding: 1.8rem .4rem;
+	}
+	tr {
+		/* stupid bug. only this fake height lets a div fill a table cell */
+		/* https://stackoverflow.com/questions/3215553/make-a-div-fill-an-entire-table-cell */
+		height: 1px; 
+	}
+	td {
+		height: inherit;
 	}
 	tr:hover {
 		background: var(--back-mark) !important;
 		cursor: pointer;
 	}
 	.meta {
-		height: 100%;
+		/* height: 100%; */
 	}
 	.meta>div {
 		display: flex;
 		flex-direction: column;
-		justify-content: space-between;
+		justify-content: space-around;
 		height: 100%;
+		flex: 1;
 	}
 	/* .date{text-align: center;} */
 	.date>* {
